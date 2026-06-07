@@ -1,5 +1,6 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { Modal } from "antd";
 
 const MENU_ITEMS = [
   { icon: "dashboard", label: "Dashboard", to: "/admin/dashboard" },
@@ -17,8 +18,13 @@ export default function AdminLayout({ children, title = "Admin Console" }) {
   const username = user?.username || user?.fullName || user?.email || "Admin";
 
   const handleLogout = () => {
-    logout();
-    navigate("/login");
+    Modal.confirm({
+      title: "Bạn muốn đăng xuất?",
+      onOk: () => {
+        logout();
+        navigate("/login");
+      },
+    });
   };
 
   return (
