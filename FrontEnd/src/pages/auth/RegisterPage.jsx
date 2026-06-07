@@ -4,7 +4,48 @@ import { register } from "../../services/authService";
 import { Form, Input, Button, message } from "antd";
 
 
+function getStrength(password) {
+  let strength = 0;
+  if (password.length > 5) strength += 25;
+  if (password.length > 8) strength += 25;
+  if (/[A-Z]/.test(password)) strength += 25;
+  if (/[0-9]/.test(password) || /[^A-Za-z0-9]/.test(password)) strength += 25;
+  return strength;
+}
+
+function StrengthBar({ strength }) {
+  if (strength === 0)
+    return (
+      <p className="font-label-sm text-label-sm text-on-surface-variant">
+        Ít nhất 8 ký tự được khuyến nghị.
+      </p>
+    );
+  if (strength <= 50)
+    return (
+      <p className="font-label-sm text-label-sm text-error">Mật khẩu yếu</p>
+    );
+  if (strength <= 75)
+    return (
+      <p className="font-label-sm text-label-sm text-secondary">
+        Mật khẩu tốt
+      </p>
+    );
+  return (
+    <p className="font-label-sm text-label-sm text-[#02e102]">Mật khẩu mạnh</p>
+  );
+}
+
+function strengthBarColor(strength) {
+  if (strength === 0) return "";
+  if (strength <= 50) return "bg-error";
+  if (strength <= 75) return "bg-secondary";
+  return "bg-[#02e102]";
+}
+
+
+
 export default function RegisterPage() {
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
 
@@ -29,6 +70,8 @@ export default function RegisterPage() {
     }
   };
 
+  const strength = getStrength(password);
+  
   return (
     <div className="bg-background mesh-gradient min-h-screen flex flex-col">
       <main className="grow flex items-center justify-center py-stack-lg px-margin-mobile">
@@ -118,9 +161,23 @@ export default function RegisterPage() {
               >
                 <Input.Password
                   placeholder="••••••••"
+                  onChange={(e) => setPassword(e.target.value)}
                   className="!h-[48px] !rounded-xl"
                 />
               </Form.Item>
+              
+              {password && (
+                <>
+                  <div className="flex gap-1 h-1.5 w-full bg-surface-container rounded-full overflow-hidden mt-2">
+                    <div
+                      className={`h-full transition-all duration-300 ${strengthBarColor(strength)}`}
+                      style={{ width: `${strength}%` }}
+                    />
+                  </div>
+
+                  <StrengthBar strength={strength} />
+                </>
+              )}
 
               {/* CONFIRM PASSWORD */}
               <Form.Item
