@@ -3,9 +3,9 @@ import api from "../lib/api";
 export const login = (email, password) =>
   api.post("/login", { email, password });
 
-export const register = (data) => api.post("/auth/register", data);
+export const register = (data) => api.post("/register", data);
 
-export const logout = () => api.post("/auth/logout");
+export const logout = () => api.post("/logout");
 
 export const forgotPassword = (email) =>
   api.post("/auth/forgot-password", { email });

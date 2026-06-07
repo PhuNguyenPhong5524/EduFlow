@@ -23,6 +23,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/change-password" element={<></>} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/security-settings" element={<SecuritySettingsPage />} />
 

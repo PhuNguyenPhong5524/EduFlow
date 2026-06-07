@@ -25,11 +25,17 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    await logoutApi();
+    try {
+      await logoutApi(); 
+    } catch (err) {
+      console.log(err);
+    }
+
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
     setUser(null);
   };
+
   const hasAnyRole = (roles) => roles.includes(user?.role);
 
   return (

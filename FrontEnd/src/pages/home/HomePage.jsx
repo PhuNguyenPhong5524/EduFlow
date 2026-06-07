@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import {
   getCategories,
   getFeatureCourses,
@@ -14,6 +14,10 @@ const ICON_MAP = {
   language: "code",
   game: "sports_esports",
 };
+import { Dropdown, Avatar, Menu } from "antd";
+import { DownOutlined } from "@ant-design/icons";
+import { useAuth } from "../../contexts/AuthContext";
+import { Modal } from "antd";
 
 // Rotating bg colors for category small cards
 const CATEGORY_BG = [
@@ -121,6 +125,50 @@ export default function HomePage() {
     return () => observer.disconnect();
   }, []);
 
+
+  
+const { user, logout } = useAuth(); 
+const navigate = useNavigate();
+
+
+const menuItems = user
+? [
+    {
+      key: "change-password",
+      label: "Đổi mật khẩu",
+      onClick: () => navigate("/change-password"),
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "logout",
+      label: "Đăng xuất",
+      danger: true,
+      onClick: () => {
+        Modal.confirm({
+        title: "Bạn muốn đăng xuất?",
+        onOk: logout,
+      });
+      }
+
+    },
+  ]
+: [
+    {
+      key: "login",
+      label: "Đăng nhập",
+      onClick: () => navigate("/login"),
+    },
+    {
+      key: "register",
+      label: "Đăng ký",
+      onClick: () => navigate("/register"),
+    },
+  ];
+
+
+
   return (
     <div className="bg-background text-on-surface font-body-md">
       {/* ── Top Navigation Bar ── */}
@@ -186,7 +234,7 @@ export default function HomePage() {
               </button>
             </div>
 
-            <div className="hidden sm:flex items-center gap-3 ml-2">
+            {/* <div className="hidden sm:flex items-center gap-3 ml-2">
               <Link
                 to="/login"
                 className="font-label-md text-label-md text-primary px-4 py-2 hover:bg-primary-container/10 rounded-lg transition-colors"
@@ -199,6 +247,47 @@ export default function HomePage() {
               >
                 Get Started
               </Link>
+            </div> */}
+
+            <div className="hidden sm:flex items-center gap-3 ml-2">
+              {!user ? (
+                <>
+                  <Link
+                    to="/login"
+                    className="font-label-md text-label-md text-primary px-4 py-2 hover:bg-primary-container/10 rounded-lg"
+                  >
+                    Sign In
+                  </Link>
+{/* 
+                  <Link
+                    to="/register"
+                    className="font-label-md bg-primary-container text-on-primary-container px-5 py-2.5 rounded-lg"
+                  >
+                    Get Started
+                  </Link> */}
+                </>
+              ) : (
+                <Dropdown
+                  menu={{ items: menuItems }}
+                  trigger={["click"]}
+                  placement="bottomRight"
+                >
+                  <div className="flex items-center gap-2 cursor-pointer hover:bg-primary-container/10 px-3 py-2 rounded-lg transition">
+                    
+                    <Avatar
+                      style={{ backgroundColor: "#1677ff" }}
+                    >
+                      {user.username?.charAt(0).toUpperCase()}
+                    </Avatar>
+
+                    <span className="text-sm font-medium">
+                      {user.username}
+                    </span>
+
+                    <DownOutlined className="text-xs" />
+                  </div>
+                </Dropdown>
+              )}
             </div>
           </div>
         </div>
