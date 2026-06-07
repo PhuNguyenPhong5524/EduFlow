@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-
-import { useNavigate, Link } from "react-router-dom";
+import { Form, Input, Button, message } from "antd";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 
 export default function LoginPage() {
@@ -12,21 +12,33 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  const onFinish = async (values) => {
+    const { email, password } = values;
+
     setSubmitting(true);
     try {
       const user = await login(email, password);
-      if (user.role === "admin") navigate("/admin/dashboard");
-      else if (user.role === "instructor") navigate("/instructor/dashboard");
-      else navigate("/dashboard");
+
+      message.success("Đăng nhập thành công ✅");
+
+      if (user.role === "admin") {
+        navigate("/admin/dashboard");
+      } else if (user.role === "provider") {
+        navigate("/instructor/dashboard");
+      } else if (user.role === "customer") {
+        navigate("/"); // hoặc "/search" nếu bạn có page search
+      } else {
+        navigate("/"); // fallback
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid email or password");
+      message.error(
+        err.response?.data?.message || "Email hoặc mật khẩu không đúng"
+      );
     } finally {
       setSubmitting(false);
     }
   };
+
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -40,18 +52,21 @@ export default function LoginPage() {
     return () => document.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
+
+
   return (
     <main className="min-h-screen flex flex-col md:flex-row">
       {/* Left Side: Hero Section */}
-      <section className="hidden md:flex md:w-1/2 relative overflow-hidden hero-pattern items-center justify-center p-margin-desktop">
+      <section className="hidden md:flex md:w-1/2 relative overflow-hidden hero-pattern items-center justify-center p-margin-desktop bg-[#122E7E]">
         <div className="absolute inset-0 z-0">
           <img
             className="w-full h-full object-cover opacity-30 mix-blend-overlay"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZufuli37g8IzSxrqEszEuUDpYQ5GGRu0pVHz1fOamHDZODrxg2OtibfaG2DFDzDtyQ-4oZVBzimBRjLt_74wrJF7Sj5jrfEy9rmR2eH-Izr-u9SihFWUw6HCg5zLQys_ZZSix0Kwpm-4uuCHaisDv5J91AYjtritQNdYf8fTTCXVDT5jDqgNWIUidjK_yloPWztS3czV0nLf--rrj4UfEwn8ZKTcAHg3nlgkCrB4TzkUd4dNKIJAsLhsdjVshJkCWRS6xmrzTqr8"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZufuli37g8IzSxrqEszEuUDpYQ5GGRu0pVHz1fOamHDZODrxg2OtibfaG2DFDzDtyQ-4oZVBzimBRjLt_74wrJF7Sj5jrfEy9rmR2eH-Izr-u9SihFWUw6HCg5zLQys_ZZSix0Kwpm-4uuCHaisDv5J91AYjtritQNdYf8fTTCXVDT5jDqgNWIUidjK_yloPWztS3czV0nLf--rrj4UfEwn8ZKTcAHg3nlgkCrB4TzkUd4dNKIJAsLhsdjVshJkCWRS6xmrzTqr8" // Replace with actual hero image URL
             alt="Students collaborating in a modern library"
           />
         </div>
         <div className="relative z-10 text-center max-w-md">
+          {/* Vietnamese Badge Text */}
           <div className="inline-flex items-center gap-stack-sm mb-stack-lg px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20">
             <span
               className="material-symbols-outlined text-white"
@@ -60,39 +75,45 @@ export default function LoginPage() {
               auto_awesome
             </span>
             <span className="font-label-md text-label-md text-white">
-              Join 50k+ active learners
+              Tham gia cùng hơn 50.000+ học viên tích cực
             </span>
           </div>
-          <h1 className="font-display text-display text-white mb-stack-md leading-tight">
-            Learn from the best.
+
+          {/* Vietnamese Main Headline */}
+          <h1 className="font-display text-[40px] text-white mb-stack-md leading-tight">
+            Học tập từ những chuyên gia hàng đầu.
           </h1>
-          <p className="font-body-lg text-body-lg text-white/80">
-            Unlock your potential with expert-led courses designed to help you
-            master new skills in a distraction-free environment.
+
+          {/* Vietnamese Descriptive Text */}
+          <p className="font-body-lg text-[16px] text-white/80">
+            Khám phá hàng nghìn khóa học chất lượng cao từ nhiều nhà cung cấp khác nhau,
+            giúp bạn làm chủ kỹ năng mới trên một nền tảng tập trung, thuận tiện.
           </p>
+
+          {/* Vietnamese Stats Section */}
           <div className="mt-12 grid grid-cols-3 gap-stack-md">
             <div className="p-stack-md rounded-xl bg-white/5 border border-white/10">
               <span className="block font-headline-md text-headline-md text-white">
-                1.2k+
+                1.5k+
               </span>
               <span className="block font-label-sm text-label-sm text-white/60">
-                Expert Mentors
+                Giảng Viên Chuyên Nghiệp
               </span>
             </div>
             <div className="p-stack-md rounded-xl bg-white/5 border border-white/10">
               <span className="block font-headline-md text-headline-md text-white">
-                4.9/5
+                4.8/5
               </span>
               <span className="block font-label-sm text-label-sm text-white/60">
-                Rating
+                Điểm Đánh Giá Học Viên
               </span>
             </div>
             <div className="p-stack-md rounded-xl bg-white/5 border border-white/10">
               <span className="block font-headline-md text-headline-md text-white">
-                24/7
+                Hỗ Trợ
               </span>
               <span className="block font-label-sm text-label-sm text-white/60">
-                Support
+                Toàn Diện 24/7
               </span>
             </div>
           </div>
@@ -103,23 +124,24 @@ export default function LoginPage() {
       <section className="flex-1 flex flex-col justify-center items-center p-margin-mobile md:p-margin-desktop bg-surface">
         {/* Mobile brand logo */}
         <div className="md:hidden w-full flex justify-center mb-stack-lg">
-          <span className="font-display text-headline-md font-bold text-primary">
+          <span className="font-display text-[24px] font-bold text-primary">
             EduFlow
           </span>
         </div>
 
         <div className="w-full max-w-110">
           <div className="glass-panel p-stack-lg md:p-10 rounded-3xl shadow-xl">
+            {/* Vietnamese Card Headline */}
             <div className="mb-stack-lg">
               <h2 className="font-headline-lg text-headline-lg text-on-surface mb-stack-sm">
-                Welcome back
+                Chào mừng bạn quay lại
               </h2>
-              <p className="font-body-md text-body-md text-on-surface-variant">
-                Enter your credentials to access your dashboard.
+              <p className="font-body-md text-[12px] text-center text-on-surface-variant">
+                Nhập thông tin đăng nhập để truy cập vào trang web.
               </p>
             </div>
 
-            {/* Social Login */}
+            {/* Social Login (keeping English names is standard) */}
             <div className="grid grid-cols-2 gap-stack-md mb-stack-lg">
               <button
                 type="button"
@@ -128,7 +150,7 @@ export default function LoginPage() {
                 <img
                   alt="Google"
                   className="w-5 h-5"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvbwQM3QVbvWXpPhhXQVON-x8SvQKyOuvS3Q3R_44fSKTRvvyQxfjeJeCxgIUK7TvnBrxvn_abGPV1xgMdPtOt1Hiy-Q-rT6NQCyXt390wm7OrS5AN3jhBbvKu34e9D_Uv1ace5nf8R8DHsU0hRBt6BAxaGX31aCf71A8sCmM1JXyvRtSOopmNsDAKK-KzS89tUyeVzD7RB1dbq0QUMrawZ9LzbVgLta4C4moWpxOQD6nXTOj7u5r7SSVrLQisr-2J-aH0b9yDeFg"
+                  src="https://www.svgrepo.com/show/475656/google-color.svg"
                 />
                 <span className="font-label-md text-label-md text-on-surface">
                   Google
@@ -151,116 +173,75 @@ export default function LoginPage() {
               </button>
             </div>
 
+            {/* Vietnamese Divider Text */}
             <div className="relative flex items-center mb-stack-lg">
               <div className="grow border-t border-outline-variant"></div>
               <span className="shrink mx-4 font-label-sm text-label-sm text-outline">
-                OR CONTINUE WITH EMAIL
+                HOẶC TIẾP TỤC BẰNG EMAIL
               </span>
               <div className="grow border-t border-outline-variant"></div>
             </div>
 
             {/* Login Form */}
-            <form className="space-y-stack-md" onSubmit={handleSubmit}>
-              <div>
-                <label
-                  className="block font-label-md text-label-md text-on-surface-variant mb-2"
-                  htmlFor="email"
+              <Form
+                onFinish={onFinish}
+                autoComplete="off"
+                className="space-y-4"
+                layout="vertical"
+              >
+                {/* EMAIL */}
+                <Form.Item
+                  name="email"
+                  label={<span className="text-[12px]">Địa chỉ Email</span>}
+                  rules={[
+                    { required: true, message: "Vui lòng nhập email!" },
+                    { type: "email", message: "Email không hợp lệ!" },
+                  ]}
                 >
-                  Email Address
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline group-focus-within:text-primary transition-colors">
-                    <span className="material-symbols-outlined text-[20px]">
-                      mail
-                    </span>
-                  </div>
-                  <input
-                    className="block w-full pl-11 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
-                    id="email"
-                    placeholder="alex@example.com"
-                    required
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                  <Input
+                    placeholder="vd: abc@gmail.com"
+                    className="!h-[48px] !rounded-xl"
                   />
-                </div>
-              </div>
+                </Form.Item>
 
-              <div>
-                <label
-                  className="block font-label-md text-label-md text-on-surface-variant mb-2"
-                  htmlFor="password"
+                {/* PASSWORD */}
+                <Form.Item
+                  name="password"
+                  label={<span className="text-[12px]">Mật khẩu</span>}
+                  rules={[
+                    { required: true, message: "Vui lòng nhập mật khẩu!" },
+                  ]}
                 >
-                  Password
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline group-focus-within:text-primary transition-colors">
-                    <span className="material-symbols-outlined text-[20px]">
-                      lock
-                    </span>
-                  </div>
-                  <input
-                    className="block w-full pl-11 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
-                    id="password"
+                  <Input.Password
                     placeholder="••••••••"
-                    required
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                    }}
+                    className="!h-[48px] !rounded-xl"
                   />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-on-surface transition-colors"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                  >
-                    <span className="material-symbols-outlined text-[20px]">
-                      {showPassword ? "visibility_off" : "visibility"}
-                    </span>
-                  </button>
-                </div>
-              </div>
+                </Form.Item>
 
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    className="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary/30 cursor-pointer"
-                    type="checkbox"
-                  />
-                  <span className="font-label-md text-label-md text-on-surface-variant">
-                    Remember me
-                  </span>
-                </label>
-                <Link
-                  className="font-label-md text-label-md text-primary hover:text-primary-fixed-dim transition-colors"
-                  to="/forgot-password"
+                {/* BUTTON */}
+                <Button
+                  htmlType="submit"
+                  loading={submitting}
+                  className="!w-full !h-[48px] !rounded-xl !bg-primary !text-white"
                 >
-                  Forgot password?
-                </Link>
-              </div>
-              {error && <p className="text-red-400 text-sm">{error}</p>}
-              <button
-                className="w-full primary-gradient text-white font-label-md text-label-md py-4 rounded-xl transition-all duration-200 transform active:scale-[0.98] shadow-lg shadow-primary/20"
-                type="submit"
-                disabled={submitting}
-              >
-                Log In
-              </button>
-            </form>
+                  Đăng nhập
+                </Button>
 
-            <p className="mt-stack-lg text-center font-body-sm text-body-sm text-on-surface-variant">
-              Don&apos;t have an account?{" "}
-              <Link
-                className="text-primary font-bold hover:underline transition-all"
-                to="/register"
-              >
-                Register
-              </Link>
-            </p>
+                {/* REGISTER */}
+                <p className="text-center text-sm">
+                  Nếu bạn chưa có tài khoản?
+                  <span
+                    className="text-blue-600 hover:underline ml-1 cursor-pointer"
+                    onClick={() => navigate("/register")}
+                  >
+                    Đăng ký
+                  </span>
+                </p>
+              </Form>
+
           </div>
 
-          {/* Footer Links */}
+          {/* Footer Links (standard Vietnamese transliteration or keeping English) */}
           <div className="mt-stack-lg flex justify-center gap-stack-md font-label-sm text-label-sm text-outline">
             <a className="hover:text-on-surface transition-colors" href="#">
               Privacy Policy

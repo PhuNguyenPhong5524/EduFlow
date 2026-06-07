@@ -84,6 +84,7 @@ import routerChangePassword from "./routes/auth/changePassword.js";
 import routerCategory from "./routes/category.js";
 import routerProvider from "./routes/provider.js";
 import routerCourse from "./routes/course.js";
+import routerRefreshToken from "./routes/auth/refreshToken.js";
 
 dotenv.config();
 
@@ -140,6 +141,9 @@ app.use("/", routerCourse);
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
+
+// Refresh token
+app.use("/", routerRefreshToken);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

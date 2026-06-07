@@ -30,9 +30,10 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("user");
     setUser(null);
   };
+  const hasAnyRole = (roles) => roles.includes(user?.role);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, hasAnyRole }}>
       {children}
     </AuthContext.Provider>
   );

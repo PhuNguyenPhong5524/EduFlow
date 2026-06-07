@@ -19,7 +19,7 @@ api.interceptors.response.use(
     if (err.response?.status === 401 && !err.config._retry) {
       err.config._retry = true;
       const { data } = await axios.post(
-        `${API_BASE_URL}/auth/refresh-token`,
+        `${API_BASE_URL}/refresh-token`,
         {},
         { withCredentials: true },
       );
