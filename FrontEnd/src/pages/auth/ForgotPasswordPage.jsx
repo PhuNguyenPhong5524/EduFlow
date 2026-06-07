@@ -135,11 +135,10 @@ export default function ForgotPasswordPage() {
                   </span>
                 </div>
                 <h1 className="font-headline-md text-headline-md text-on-surface">
-                  Forgot Password?
+                  Quên mật khẩu?
                 </h1>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Enter the email associated with your account and we&apos;ll
-                  send you a link to reset your password.
+                <p className="font-body-sm text-[13px] text-on-surface-variant">
+                  Nhập địa chỉ email liên kết với tài khoản của bạn và chúng tôi sẽ gửi cho bạn một đường dẫn để đặt lại mật khẩu.
                 </p>
               </div>
 
@@ -149,7 +148,7 @@ export default function ForgotPasswordPage() {
                     className="font-label-md text-label-md text-on-surface-variant"
                     htmlFor="email"
                   >
-                    Email Address
+                    Địa chỉ Email
                   </label>
                   <div className="relative">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
@@ -158,7 +157,7 @@ export default function ForgotPasswordPage() {
                     <input
                       className="w-full pl-10 pr-4 py-3 rounded-lg border border-outline-variant bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-body-sm"
                       id="email"
-                      placeholder="name@company.com"
+                      placeholder="name@gmail.com"
                       required
                       type="email"
                       value={email}
@@ -171,7 +170,7 @@ export default function ForgotPasswordPage() {
                   type="submit"
                   disabled={submitting}
                 >
-                  {submitting ? "Sending..." : "Send reset link"}
+                  {submitting ? "Sending..." : "Xác nhận gửi"}
                 </button>
                 {apiError && (
                   <p className="text-red-400 text-sm text-center mt-2">

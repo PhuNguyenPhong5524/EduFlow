@@ -230,15 +230,24 @@ export default function LoginPage() {
                 </Button>
 
                 {/* REGISTER */}
-                <p className="text-center text-sm">
-                  Nếu bạn chưa có tài khoản?
-                  <span
-                    className="text-blue-600 hover:underline ml-1 cursor-pointer"
-                    onClick={() => navigate("/register")}
-                  >
-                    Đăng ký
-                  </span>
-                </p>
+                  <div className="flex gap-1 items-center">
+                    <p
+                      className="text-[#FF0000] hover:underline ml-1 cursor-pointer"
+                      onClick={() => navigate("/forgot-password")}
+                    >
+                      Quên mật khẩu?
+                    </p> 
+                    <div className="text-[#d0d0d0]">|</div>
+                    <p className="text-center text-sm">
+                      Nếu bạn chưa có tài khoản?
+                      <span
+                        className="text-blue-600 hover:underline ml-1 cursor-pointer"
+                        onClick={() => navigate("/register")}
+                      >
+                        Đăng ký
+                      </span>
+                    </p>
+                  </div>
               </Form>
 
           </div>

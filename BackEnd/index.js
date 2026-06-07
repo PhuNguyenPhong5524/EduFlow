@@ -85,6 +85,9 @@ import routerCategory from "./routes/category.js";
 import routerProvider from "./routes/provider.js";
 import routerCourse from "./routes/course.js";
 import routerRefreshToken from "./routes/auth/refreshToken.js";
+import routerForgotPassword from "./routes/auth/forgotPassword.js";
+
+
 
 dotenv.config();
 
@@ -128,6 +131,9 @@ app.use("/", routerRegister);
 
 // Đổi mật khẩu
 app.use("/", routerChangePassword);
+
+// Quên mật khẩu
+app.use("/", routerForgotPassword);
 
 // Danh mục
 app.use("/", routerCategory);
