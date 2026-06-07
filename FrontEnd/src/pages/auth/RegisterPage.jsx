@@ -82,7 +82,7 @@ export default function RegisterPage() {
               <span className="font-label-md text-label-md px-3 py-1 bg-on-primary-container/10 rounded-full inline-block mb-stack-md">
                 Chào mừng bạn gia nhập [Tên Nền Tảng]
               </span>
-              <h1 className="font-display text-display leading-tight mb-stack-md">
+              <h1 className="font-bold text-[34px] leading-tight mb-stack-md">
                 Làm Chủ Tương Lai, Khóa Học Từng Bước.
               </h1>
               <p className="font-body-lg text-body-lg opacity-90 max-w-sm">
@@ -130,6 +130,7 @@ export default function RegisterPage() {
                 ]}
               >
                 <Input
+                  autoComplete="new-password"
                   placeholder="vd: phu123"
                   className="!h-[48px] !rounded-xl"
                 />
@@ -145,6 +146,7 @@ export default function RegisterPage() {
                 ]}
               >
                 <Input
+                  autoComplete="new-password"
                   placeholder="vd: abc@gmail.com"
                   className="!h-[48px] !rounded-xl"
                 />
@@ -160,6 +162,7 @@ export default function RegisterPage() {
                 ]}
               >
                 <Input.Password
+                  autoComplete="new-password"
                   placeholder="••••••••"
                   onChange={(e) => setPassword(e.target.value)}
                   className="!h-[48px] !rounded-xl"
