@@ -16,19 +16,43 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   async (err) => {
-    if (err.response?.status === 401 && !err.config._retry) {
-      err.config._retry = true;
-      const { data } = await axios.post(
-        `${API_BASE_URL}/refresh-token`,
-        {},
-        { withCredentials: true },
-      );
-      localStorage.setItem("accessToken", data.accessToken);
-      err.config.headers.Authorization = `Bearer ${data.accessToken}`;
-      return api(err.config);
+    const originalRequest = err.config;
+
+    const isAuthRoute =
+      originalRequest.url?.includes("/login") ||
+      originalRequest.url?.includes("/register") ||
+      originalRequest.url?.includes("/refresh-token");
+
+    if (
+      err.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isAuthRoute
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        const { data } = await axios.post(
+          `${API_BASE_URL}/refresh-token`,
+          {},
+          { withCredentials: true }
+        );
+
+        localStorage.setItem("accessToken", data.accessToken);
+
+        originalRequest.headers.Authorization =
+          `Bearer ${data.accessToken}`;
+
+        return api(originalRequest);
+      } catch (refreshErr) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("user");
+
+        return Promise.reject(refreshErr);
+      }
     }
+
     return Promise.reject(err);
-  },
+  }
 );
 
 export default api;

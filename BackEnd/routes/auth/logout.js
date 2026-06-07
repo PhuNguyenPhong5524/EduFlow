@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { login } from "../../controllers/auth/logout.js";
+import { logoutUser } from "../../controllers/auth/logout.js";
 
 const routerLogout = Router();
 
-routerLogout.post("/logout", logout);
+routerLogout.post("/logout", logoutUser);
 
 export default routerLogout;

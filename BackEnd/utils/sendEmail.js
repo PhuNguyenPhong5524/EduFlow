@@ -12,7 +12,7 @@ export const sendOtpEmail = async (email, otp) => {
         <h2>Đặt lại mật khẩu</h2>
         <p>Mã OTP của bạn là:</p>
         <h1 style="color: #1677ff;">${otp}</h1>
-        <p>Mã có hiệu lực trong 5 phút!</p>
+        <p>Mã có hiệu lực trong 2 phút!</p>
       </div>
     `,
   });

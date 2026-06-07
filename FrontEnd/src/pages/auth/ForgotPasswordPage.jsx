@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { forgotPassword, resetPassword } from "../../services/authService";
+import { forgotPassword, resetPassword, verifyOtp } from "../../services/authService";
+import { message } from "antd";
+
 
 const SCREEN = {
   FORGOT: "forgot",
+  OTP: "otp",     
   SUCCESS: "success",
   RESET: "reset",
 };
@@ -17,25 +20,54 @@ function getStrength(val) {
   return { strength, hasLength, hasSpecial };
 }
 
-export default function ForgotPasswordPage() {
-  const [screen, setScreen] = useState(SCREEN.FORGOT);
+const ForgotPasswordPage = () => {
+
+    const [screen, setScreen] = useState(SCREEN.FORGOT);
   const [email, setEmail] = useState("");
   const [sentEmail, setSentEmail] = useState("");
+
+  const [otp, setOtp] = useState("");
+  const [timeLeft, setTimeLeft] = useState(120);
+  const [canResend, setCanResend] = useState(false);
+
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
   const [showNewPass, setShowNewPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
+
   const [passError, setPassError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
+
   const navigate = useNavigate();
 
   const { strength, hasLength, hasSpecial } = getStrength(newPassword);
 
+  // TIMER OTP
+  useEffect(() => {
+    if (screen === SCREEN.OTP && timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+
+    if (timeLeft === 0) setCanResend(true);
+  }, [timeLeft, screen]);
+
+  const formatTime = (s) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec < 10 ? "0" : ""}${sec}`;
+  };
+
   function strengthLabel() {
     if (strength === 0)
       return { text: "Enter a password", color: "text-outline" };
-    if (strength === 50) return { text: "Moderate", color: "text-amber-600" };
+    if (strength === 50)
+      return { text: "Moderate", color: "text-amber-600" };
     return { text: "Strong password", color: "text-emerald-600" };
   }
 
@@ -45,40 +77,90 @@ export default function ForgotPasswordPage() {
     return "bg-emerald-500";
   }
 
+  // GỬI OTP
   async function handleForgot(e) {
     e.preventDefault();
     setApiError("");
     setSubmitting(true);
+
     try {
       await forgotPassword(email);
+
+      // SUCCESS
+      message.success("Đã gửi mã OTP về email");
+
       setSentEmail(email);
-      setScreen(SCREEN.SUCCESS);
+      setScreen(SCREEN.OTP);
+      setTimeLeft(120);
+      setCanResend(false);
     } catch (err) {
-      setApiError(err.response?.data?.message || "Failed to send reset link.");
+      message.error("Gửi OTP thất bại");
+
+      setApiError(
+        err.response?.data?.message || "Gửi OTP thất bại"
+      );
     } finally {
       setSubmitting(false);
     }
   }
 
+  // Gửi lại OTP
+  async function handleResendOtp() {
+    try {
+      await forgotPassword(email);
+
+      message.success("Đã gửi lại OTP");
+
+      setTimeLeft(120);
+      setCanResend(false);
+    } catch {
+      message.error("Gửi lại OTP thất bại");
+
+      setApiError("Gửi lại OTP thất bại");
+    }
+  }
+
+  // Xác thực OTP
+  async function handleVerifyOtp() {
+    try {
+      await verifyOtp(email, otp);
+
+      message.success("Xác thực OTP thành công ✅");
+
+      setScreen(SCREEN.RESET);
+    } catch {
+      message.error("OTP không đúng hoặc hết hạn ❌");
+
+      setApiError("OTP không đúng hoặc hết hạn");
+    }
+  }
+
+  // Đặt lại mật khẩu
   async function handleFinalSubmit(e) {
     e.preventDefault();
+
     if (newPassword !== confirmPassword) {
       setPassError("Passwords do not match");
       return;
     }
+
     if (newPassword.length < 8) {
       setPassError("Password must be at least 8 characters");
       return;
     }
-    setPassError("");
-    setApiError("");
+
     setSubmitting(true);
+
     try {
-      await resetPassword(sentEmail, newPassword);
-      resetFlow();
+      await resetPassword(sentEmail, newPassword, confirmPassword);
+
+      message.success("Đổi mật khẩu thành công 🎉");
+
       navigate("/login");
-    } catch (err) {
-      setApiError(err.response?.data?.message || "Failed to reset password.");
+    } catch {
+      message.error("Reset mật khẩu thất bại ❌");
+
+      setApiError("Reset thất bại");
     } finally {
       setSubmitting(false);
     }
@@ -87,16 +169,12 @@ export default function ForgotPasswordPage() {
   function resetFlow() {
     setScreen(SCREEN.FORGOT);
     setEmail("");
-    setSentEmail("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setShowNewPass(false);
-    setShowConfirmPass(false);
-    setPassError("");
+    setOtp("");
+    setTimeLeft(120);
+    setCanResend(false);
   }
 
   const label = strengthLabel();
-
   return (
     <div className="bg-background text-on-background font-body-md min-h-screen flex flex-col">
       {/* Navbar */}
@@ -206,56 +284,121 @@ export default function ForgotPasswordPage() {
                   check_circle
                 </span>
               </div>
+
               <div className="space-y-stack-sm">
                 <h2 className="font-headline-md text-headline-md text-on-surface">
-                  Check your email
+                  Kiểm tra email của bạn
                 </h2>
+
                 <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  We&apos;ve sent a password reset link to{" "}
+                  Chúng tôi đã gửi liên kết đặt lại mật khẩu đến{" "}
                   <span className="font-semibold text-on-surface">
                     {sentEmail}
-                  </span>
-                  .
+                  </span>.
                 </p>
               </div>
+
               <div className="bg-surface-container-low rounded-lg p-stack-md text-left flex gap-stack-md items-start">
                 <span className="material-symbols-outlined text-outline text-[20px]">
                   info
                 </span>
+
                 <p className="font-body-sm text-body-sm text-on-surface-variant leading-snug">
-                  Didn&apos;t receive the email? Check your spam folder or try
-                  again in 2 minutes.
+                  Chưa nhận được email? Hãy kiểm tra thư mục Spam hoặc thử lại sau
+                  khoảng 2 phút.
                 </p>
               </div>
+
               <button
                 className="w-full py-3 px-4 rounded-lg bg-surface border border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-variant transition-all active:scale-[0.98]"
                 onClick={() => setScreen(SCREEN.RESET)}
               >
-                Open Email App
+                Mở ứng dụng email
               </button>
+
               <div className="text-center pt-stack-sm">
                 <button
                   className="font-label-md text-label-md text-primary hover:underline"
                   onClick={resetFlow}
                 >
-                  Resend link
+                  Gửi lại liên kết
                 </button>
               </div>
             </div>
           </div>
         )}
+        {/* OTP Screen */}
+        {screen === SCREEN.OTP && (
+          <div className="w-full max-w-110">
+            <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm p-stack-lg flex flex-col gap-stack-lg text-center">
 
+              <h2 className="font-headline-md text-on-surface">
+                Nhập mã OTP
+              </h2>
+
+              <p className="font-body-sm text-on-surface-variant">
+                Mã đã được gửi tới <b>{email}</b>
+              </p>
+
+              {/* Input OTP */}
+              <input
+                type="text"
+                maxLength={6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                className="text-center text-xl tracking-[8px] py-3 px-4 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary"
+                placeholder="______"
+              />
+
+              {/* Timer */}
+              <p className="text-sm text-outline">
+                Thời gian còn lại:{" "}
+                <span className="text-primary font-semibold">
+                  {formatTime(timeLeft)}
+                </span>
+              </p>
+
+              <button
+                onClick={handleVerifyOtp}
+                className="w-full py-3 px-4 rounded-lg gradient-primary text-white"
+              >
+                Xác nhận OTP
+              </button>
+
+              {/* Resend */}
+              {canResend ? (
+                <button
+                  onClick={() => {
+                    setTimeLeft(120);
+                    setCanResend(false);
+                    handleForgot(new Event("submit")); // gọi lại API
+                  }}
+                  className="text-primary hover:underline"
+                >
+                  Gửi lại mã OTP
+                </button>
+              ) : (
+                <p className="text-sm text-outline">
+                  Có thể gửi lại sau khi hết thời gian
+                </p>
+              )}
+
+              {apiError && (
+                <p className="text-red-400 text-sm">{apiError}</p>
+              )}
+            </div>
+          </div>
+        )}
         {/* Reset Password Screen */}
         {screen === SCREEN.RESET && (
           <div className="w-full max-w-110">
             <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm p-stack-lg flex flex-col gap-stack-lg">
               <div className="text-center space-y-stack-sm">
                 <h1 className="font-headline-md text-headline-md text-on-surface">
-                  Set new password
+                  Đặt lại mật khẩu mới
                 </h1>
                 <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Your new password must be different from previously used
-                  passwords.
+                  Mật khẩu mới của bạn phải khác với các mật khẩu đã sử dụng trước đây.
                 </p>
               </div>
 
@@ -266,7 +409,7 @@ export default function ForgotPasswordPage() {
                     className="font-label-md text-label-md text-on-surface-variant"
                     htmlFor="new-password"
                   >
-                    New Password
+                    Mật khẩu mới
                   </label>
                   <div className="relative">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
@@ -319,7 +462,7 @@ export default function ForgotPasswordPage() {
                     className="font-label-md text-label-md text-on-surface-variant"
                     htmlFor="confirm-password"
                   >
-                    Confirm Password
+                    Xác nhận mật khẩu
                   </label>
                   <div className="relative">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
@@ -349,10 +492,14 @@ export default function ForgotPasswordPage() {
                 {/* Requirements */}
                 <ul className="space-y-2 py-2">
                   <li
-                    className={`flex items-center gap-2 text-label-sm ${hasLength ? "text-on-surface" : "text-on-surface-variant"}`}
+                    className={`flex items-center gap-2 text-label-sm ${
+                      hasLength ? "text-on-surface" : "text-on-surface-variant"
+                    }`}
                   >
                     <span
-                      className={`material-symbols-outlined text-[16px] ${hasLength ? "text-emerald-500" : "text-outline"}`}
+                      className={`material-symbols-outlined text-[16px] ${
+                        hasLength ? "text-emerald-500" : "text-outline"
+                      }`}
                       style={
                         hasLength
                           ? { fontVariationSettings: "'FILL' 1" }
@@ -361,13 +508,18 @@ export default function ForgotPasswordPage() {
                     >
                       {hasLength ? "check_circle" : "circle"}
                     </span>
-                    At least 8 characters
+                    Ít nhất 8 ký tự
                   </li>
+
                   <li
-                    className={`flex items-center gap-2 text-label-sm ${hasSpecial ? "text-on-surface" : "text-on-surface-variant"}`}
+                    className={`flex items-center gap-2 text-label-sm ${
+                      hasSpecial ? "text-on-surface" : "text-on-surface-variant"
+                    }`}
                   >
                     <span
-                      className={`material-symbols-outlined text-[16px] ${hasSpecial ? "text-emerald-500" : "text-outline"}`}
+                      className={`material-symbols-outlined text-[16px] ${
+                        hasSpecial ? "text-emerald-500" : "text-outline"
+                      }`}
                       style={
                         hasSpecial
                           ? { fontVariationSettings: "'FILL' 1" }
@@ -376,7 +528,7 @@ export default function ForgotPasswordPage() {
                     >
                       {hasSpecial ? "check_circle" : "circle"}
                     </span>
-                    Contain at least one special character
+                    Chứa ít nhất một ký tự đặc biệt
                   </li>
                 </ul>
 
@@ -433,3 +585,5 @@ export default function ForgotPasswordPage() {
     </div>
   );
 }
+
+export default ForgotPasswordPage;
