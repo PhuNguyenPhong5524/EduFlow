@@ -199,6 +199,7 @@ export default function LoginPage() {
                   ]}
                 >
                   <Input
+                    autoComplete="new-password"
                     placeholder="vd: abc@gmail.com"
                     className="!h-[48px] !rounded-xl"
                   />
@@ -213,7 +214,8 @@ export default function LoginPage() {
                   ]}
                 >
                   <Input.Password
-                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    placeholder="Nhập mật khẩu của bạn"
                     className="!h-[48px] !rounded-xl"
                   />
                 </Form.Item>

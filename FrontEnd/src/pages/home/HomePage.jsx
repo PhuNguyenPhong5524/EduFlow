@@ -254,7 +254,7 @@ const menuItems = user
                 <>
                   <Link
                     to="/login"
-                    className="font-label-md text-label-md text-primary px-4 py-2 hover:bg-primary-container/10 rounded-lg"
+                    className="font-label-md text-label-md text-primary px-4 py-2 border-[0.5px] p-5 hover:bg-primary-container/10 rounded-lg"
                   >
                     Sign In
                   </Link>
