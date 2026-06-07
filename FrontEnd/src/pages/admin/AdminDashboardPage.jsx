@@ -1,13 +1,50 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 
 const NAV_ITEMS = [
-  { icon: "dashboard", label: "Dashboard", active: true },
-  { icon: "school", label: "My Courses", active: false },
-  { icon: "favorite", label: "Wishlist", active: false },
-  { icon: "settings", label: "Settings", active: false },
-  { icon: "help", label: "Help Center", active: false },
+  {
+    icon: "dashboard",
+    label: "Dashboard",
+    to: "/admin/dashboard",
+    active: true,
+    disabled: false,
+  },
+  {
+    icon: "group",
+    label: "Users",
+    to: "/admin/users",
+    active: false,
+    disabled: false,
+  },
+  {
+    icon: "co_present",
+    label: "Providers",
+    to: "#",
+    active: false,
+    disabled: true,
+  },
+  {
+    icon: "school",
+    label: "Courses",
+    to: "#",
+    active: false,
+    disabled: true,
+  },
+  {
+    icon: "category",
+    label: "Categories",
+    to: "#",
+    active: false,
+    disabled: true,
+  },
+  {
+    icon: "settings",
+    label: "Settings",
+    to: "/security-settings",
+    active: false,
+    disabled: false,
+  },
 ];
 
 const KPI_CARDS = [
@@ -155,14 +192,16 @@ export default function AdminDashboardPage() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  const [visible, setVisible] = useState(false);
+  const [hoveredRevBar, setHoveredRevBar] = useState(null);
+
+  const username = user?.username || user?.fullName || user?.email || "Admin";
+
   const handleLogout = async () => {
     await logout();
     navigate("/login");
   };
-  const [visible, setVisible] = useState(false);
-  const [hoveredRevBar, setHoveredRevBar] = useState(null);
 
-  // Fade-in on mount (replaces the window.load opacity script)
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 50);
     return () => clearTimeout(t);
@@ -170,60 +209,88 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="bg-surface text-on-surface overflow-x-hidden">
-      {/* Sidebar — full-height, top-0 */}
       <aside className="fixed left-0 top-0 h-screen w-64 bg-surface-container-low shadow-md flex flex-col py-[32px] gap-[16px] z-40">
         <div className="px-6 mb-8">
-          <h1 className="font-headline-md text-headline-md font-bold text-primary">
+          <Link
+            to="/admin/dashboard"
+            className="font-headline-md text-headline-md font-bold text-primary"
+          >
             EduFlow
-          </h1>
+          </Link>
+          <p className="mt-1 text-xs text-on-surface-variant">
+            Admin management
+          </p>
         </div>
 
         <nav className="flex-1 flex flex-col gap-1 px-4">
-          {NAV_ITEMS.map(({ icon, label, active }) => (
-            <a
-              key={label}
-              href="#"
-              className={`flex items-center gap-3 px-4 py-3 font-label-md text-label-md transition-all group ${
-                active
-                  ? "bg-primary-container/20 text-primary border-l-4 border-primary translate-x-1 duration-200"
-                  : "text-on-surface-variant hover:bg-surface-container-high"
-              }`}
-            >
-              <span
-                className={`material-symbols-outlined ${!active ? "group-hover:text-primary" : ""}`}
+          {NAV_ITEMS.map(({ icon, label, to, active, disabled }) =>
+            disabled ? (
+              <div
+                key={label}
+                className="flex cursor-not-allowed items-center gap-3 px-4 py-3 font-label-md text-label-md text-on-surface-variant/45"
+                title="Coming soon"
               >
-                {icon}
-              </span>
-              <span>{label}</span>
-            </a>
-          ))}
+                <span className="material-symbols-outlined">{icon}</span>
+                <span>{label}</span>
+              </div>
+            ) : (
+              <Link
+                key={label}
+                to={to}
+                className={`flex items-center gap-3 px-4 py-3 font-label-md text-label-md transition-all group ${
+                  active
+                    ? "bg-primary-container/20 text-primary border-l-4 border-primary translate-x-1 duration-200"
+                    : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
+                }`}
+              >
+                <span
+                  className={`material-symbols-outlined ${
+                    !active ? "group-hover:text-primary" : ""
+                  }`}
+                >
+                  {icon}
+                </span>
+                <span>{label}</span>
+              </Link>
+            ),
+          )}
         </nav>
 
         <div className="px-4 mt-auto">
           <div className="glass-card rounded-xl p-4 mb-4">
             <div className="flex items-center gap-3 mb-3">
-              <img
-                alt="User Profile"
-                className="w-10 h-10 rounded-full object-cover"
-                src={
-                  user?.avatarUrl ||
-                  "https://lh3.googleusercontent.com/aida-public/AB6AXuBTEeIMk02ID5N890ARhqh0LF25nYq8OGosOtb8QGY-WhGLvqBJdDFHUb1U4jrLTdQhQrrWz1iy9svkh362giySlN5fs5XT93bUzGjX4a_J81JibyXGm6VNgRO68vW7hC9zDGNfAnwl0hDyZ_6arNB1VCYbd89NEd7VllQUdtdX9w_WxgNWR3jmWByg56c23MAFXSQevteNYE8jZyP98KQZT_hPFZzOuArpxezd5mI9zHVWob9fpXf2alJC-Rd28Tu-14k6Q3w6XpQ"
-                }
-              />
-              <div>
-                <p className="font-label-md text-label-md text-on-surface font-bold">
-                  {user?.fullName ?? "Admin"}
+              {user?.avatarUrl ? (
+                <img
+                  alt="User Profile"
+                  className="w-10 h-10 rounded-full object-cover"
+                  src={user.avatarUrl}
+                />
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-on-primary font-bold">
+                  {username[0]?.toUpperCase() || "A"}
+                </div>
+              )}
+
+              <div className="min-w-0">
+                <p className="truncate font-label-md text-label-md text-on-surface font-bold">
+                  {username}
                 </p>
-                <p className="text-xs text-on-surface-variant">
-                  Premium Learner
+                <p className="text-xs capitalize text-on-surface-variant">
+                  {user?.role || "admin"}
                 </p>
               </div>
             </div>
-            <button className="w-full py-2 bg-primary text-on-primary rounded-lg font-label-sm text-label-sm hover:opacity-90 transition-opacity">
-              Upgrade to Pro
-            </button>
+
+            <Link
+              to="/admin/users"
+              className="block w-full rounded-lg bg-primary py-2 text-center font-label-sm text-label-sm text-on-primary transition-opacity hover:opacity-90"
+            >
+              Manage Users
+            </Link>
           </div>
+
           <button
+            type="button"
             onClick={handleLogout}
             className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-error transition-colors font-label-md text-label-md"
           >
@@ -233,7 +300,6 @@ export default function AdminDashboardPage() {
         </div>
       </aside>
 
-      {/* TopNavBar — offset by sidebar */}
       <header className="fixed top-0 right-0 left-64 h-16 bg-surface/70 backdrop-blur-xl border-b border-outline-variant/30 z-30 shadow-sm">
         <div className="flex justify-between items-center h-full px-[40px] max-w-7xl mx-auto">
           <div className="flex items-center gap-[24px] flex-1">
@@ -261,28 +327,32 @@ export default function AdminDashboardPage() {
                 </a>
               ))}
             </div>
+
             <div className="flex items-center gap-4">
               <button className="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-all scale-95 active:scale-90 relative">
                 <span className="material-symbols-outlined">notifications</span>
                 <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full" />
               </button>
+
               <button className="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-all scale-95 active:scale-90">
                 <span className="material-symbols-outlined">shopping_cart</span>
               </button>
-              <button className="bg-primary text-on-primary px-6 py-2 rounded-full font-label-md text-label-md hover:shadow-lg transition-all active:scale-95">
-                Get Started
-              </button>
+
+              <Link
+                to="/admin/users"
+                className="bg-primary text-on-primary px-6 py-2 rounded-full font-label-md text-label-md hover:shadow-lg transition-all active:scale-95"
+              >
+                Manage Users
+              </Link>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <main
         className="ml-64 pt-24 px-[40px] pb-12 max-w-7xl mx-auto transition-opacity duration-700"
         style={{ opacity: visible ? 1 : 0 }}
       >
-        {/* Welcome Header */}
         <section className="mb-[32px] flex justify-between items-end">
           <div>
             <h2 className="font-headline-lg text-headline-lg text-on-surface">
@@ -292,6 +362,7 @@ export default function AdminDashboardPage() {
               System oversight for May 24, 2024
             </p>
           </div>
+
           <div className="flex gap-[8px]">
             <button className="flex items-center gap-2 px-4 py-2 glass-card rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors">
               <span className="material-symbols-outlined text-[20px]">
@@ -299,6 +370,7 @@ export default function AdminDashboardPage() {
               </span>
               Last 30 Days
             </button>
+
             <button className="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg font-label-md text-label-md shadow-sm hover:shadow-md transition-all">
               <span className="material-symbols-outlined text-[20px]">
                 download
@@ -308,7 +380,6 @@ export default function AdminDashboardPage() {
           </div>
         </section>
 
-        {/* KPI Cards */}
         <section className="grid grid-cols-1 md:grid-cols-4 gap-[24px] mb-[32px]">
           {KPI_CARDS.map(
             ({
@@ -331,12 +402,14 @@ export default function AdminDashboardPage() {
                       {icon}
                     </span>
                   </div>
+
                   <span
                     className={`text-xs font-bold px-2 py-1 rounded-full ${badgeClass}`}
                   >
                     {badge}
                   </span>
                 </div>
+
                 <div>
                   <p className="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
                     {label}
@@ -350,18 +423,21 @@ export default function AdminDashboardPage() {
           )}
         </section>
 
-        {/* Content Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-[24px]">
-          {/* User Activity Table */}
           <div className="xl:col-span-2 glass-card rounded-xl overflow-hidden flex flex-col">
             <div className="p-6 border-b border-outline-variant/30 flex justify-between items-center bg-white/50">
               <h4 className="font-headline-md text-headline-md text-on-surface">
                 Recent User Activity
               </h4>
-              <button className="text-primary font-label-md text-label-md hover:underline">
+
+              <Link
+                to="/admin/users"
+                className="text-primary font-label-md text-label-md hover:underline"
+              >
                 View All Users
-              </button>
+              </Link>
             </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -376,6 +452,7 @@ export default function AdminDashboardPage() {
                     ))}
                   </tr>
                 </thead>
+
                 <tbody className="divide-y divide-outline-variant/20">
                   {USERS.map(
                     ({
@@ -401,6 +478,7 @@ export default function AdminDashboardPage() {
                             >
                               {initials}
                             </div>
+
                             <div>
                               <p className="text-body-sm font-semibold text-on-surface">
                                 {name}
@@ -411,6 +489,7 @@ export default function AdminDashboardPage() {
                             </div>
                           </div>
                         </td>
+
                         <td className="px-6 py-4">
                           <span
                             className={`inline-flex items-center gap-1 text-[12px] font-bold px-2 py-0.5 rounded-full ${statusClass}`}
@@ -421,18 +500,24 @@ export default function AdminDashboardPage() {
                             {statusLabel}
                           </span>
                         </td>
+
                         <td className="px-6 py-4 text-body-sm text-on-surface-variant">
                           {role}
                         </td>
+
                         <td className="px-6 py-4 text-body-sm text-on-surface-variant">
                           {plan}
                         </td>
+
                         <td className="px-6 py-4">
-                          <button className="p-1 hover:bg-surface-container rounded-lg transition-colors group-hover:text-primary">
+                          <Link
+                            to="/admin/users"
+                            className="inline-flex p-1 hover:bg-surface-container rounded-lg transition-colors group-hover:text-primary"
+                          >
                             <span className="material-symbols-outlined text-[20px]">
                               more_vert
                             </span>
-                          </button>
+                          </Link>
                         </td>
                       </tr>
                     ),
@@ -442,9 +527,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Right column */}
           <div className="xl:col-span-1 flex flex-col gap-[24px]">
-            {/* Moderation Queue */}
             <div className="glass-card rounded-xl p-6">
               <h4 className="font-headline-md text-headline-md text-on-surface mb-[16px] flex items-center justify-between">
                 Moderation Queue
@@ -452,6 +535,7 @@ export default function AdminDashboardPage() {
                   4 New
                 </span>
               </h4>
+
               <div className="space-y-4">
                 {MODERATION_QUEUE.map(
                   ({
@@ -475,6 +559,7 @@ export default function AdminDashboardPage() {
                             {icon}
                           </span>
                         </div>
+
                         <div className="flex-1">
                           <p className="font-label-md text-label-md text-on-surface font-bold">
                             {title}
@@ -482,6 +567,7 @@ export default function AdminDashboardPage() {
                           <p className="text-xs text-on-surface-variant mb-3">
                             {subtitle}
                           </p>
+
                           <div className="flex gap-2">
                             <button className="flex-1 py-1.5 bg-green-600 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition-colors">
                               {primaryBtn}
@@ -496,16 +582,17 @@ export default function AdminDashboardPage() {
                   ),
                 )}
               </div>
+
               <button className="w-full mt-6 py-3 text-primary font-label-md text-label-md border-t border-outline-variant/30 hover:bg-primary/5 transition-colors">
                 View All Moderation
               </button>
             </div>
 
-            {/* Platform Health */}
             <div className="glass-card rounded-xl p-6 bg-primary-container/10 border border-primary/20">
               <h5 className="font-label-md text-label-md text-primary font-bold mb-4 uppercase tracking-widest">
                 Platform Status
               </h5>
+
               <div className="space-y-3">
                 {PLATFORM_STATUS.map(
                   ({ label, status, statusClass, barClass, width }) => (
@@ -520,6 +607,7 @@ export default function AdminDashboardPage() {
                           {status}
                         </span>
                       </div>
+
                       <div className="w-full bg-surface-container rounded-full h-1.5 mt-1">
                         <div
                           className={`${barClass} h-1.5 rounded-full`}
@@ -534,12 +622,11 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Revenue Charts Section */}
         <section className="mt-[32px]">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-[24px]">
-            {/* Revenue Growth Bar Chart */}
             <div className="glass-card rounded-2xl p-8 relative overflow-hidden h-100">
               <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent pointer-events-none" />
+
               <div className="relative z-10 h-full flex flex-col">
                 <div className="mb-6">
                   <h4 className="font-headline-md text-headline-md text-on-surface">
@@ -549,6 +636,7 @@ export default function AdminDashboardPage() {
                     Real-time subscription and sales data
                   </p>
                 </div>
+
                 <div className="flex-1 flex items-end gap-3 pb-4">
                   {REVENUE_BARS.map(
                     ({ month, height, isCurrent, tooltip }, i) => (
@@ -569,6 +657,7 @@ export default function AdminDashboardPage() {
                     ),
                   )}
                 </div>
+
                 <div className="flex justify-between text-[12px] text-on-surface-variant font-medium px-1">
                   {REVENUE_BARS.map(({ month }) => (
                     <span key={month}>{month}</span>
@@ -577,15 +666,14 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            {/* 2×2 Metric Cards */}
             <div className="grid grid-cols-2 gap-[16px]">
-              {/* Avg Course Rating */}
               <div className="glass-card rounded-2xl p-6 flex flex-col justify-between">
                 <div className="p-3 bg-secondary-fixed rounded-xl w-fit">
                   <span className="material-symbols-outlined text-secondary">
                     star
                   </span>
                 </div>
+
                 <div>
                   <p className="text-on-surface-variant font-label-md text-label-md">
                     Avg Course Rating
@@ -596,6 +684,7 @@ export default function AdminDashboardPage() {
                       /5.0
                     </span>
                   </h5>
+
                   <div className="flex gap-0.5 mt-2">
                     {[1, 2, 3, 4, 5].map((i) => (
                       <span
@@ -610,13 +699,13 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* Conversion Rate */}
               <div className="glass-card rounded-2xl p-6 flex flex-col justify-between">
                 <div className="p-3 bg-tertiary-fixed rounded-xl w-fit">
                   <span className="material-symbols-outlined text-tertiary">
                     conversion_path
                   </span>
                 </div>
+
                 <div>
                   <p className="text-on-surface-variant font-label-md text-label-md">
                     Conv. Rate
@@ -630,13 +719,13 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* Storage Used — dark card */}
               <div className="glass-card rounded-2xl p-6 flex flex-col justify-between bg-on-surface text-surface">
                 <div className="p-3 bg-surface/10 rounded-xl w-fit">
                   <span className="material-symbols-outlined text-surface">
                     database
                   </span>
                 </div>
+
                 <div>
                   <p className="text-surface-dim font-label-md text-label-md">
                     Storage Used
@@ -644,6 +733,7 @@ export default function AdminDashboardPage() {
                   <h5 className="font-display text-headline-lg text-surface mt-2">
                     12.8 TB
                   </h5>
+
                   <div className="w-full bg-surface/20 rounded-full h-1.5 mt-2">
                     <div
                       className="bg-primary-fixed h-1.5 rounded-full"
@@ -653,13 +743,13 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* Peak Concurrent */}
               <div className="glass-card rounded-2xl p-6 flex flex-col justify-between">
                 <div className="p-3 bg-error-container/20 rounded-xl w-fit">
                   <span className="material-symbols-outlined text-error">
                     bolt
                   </span>
                 </div>
+
                 <div>
                   <p className="text-on-surface-variant font-label-md text-label-md">
                     Peak Concurrent

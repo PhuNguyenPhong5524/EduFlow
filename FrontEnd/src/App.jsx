@@ -9,7 +9,9 @@ import RegisterPage from "./pages/auth/RegisterPage";
 import DashboardPage from "./pages/customer/DashboardPage";
 import InstructorDashboardPage from "./pages/provider/InstructorDashboardPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminLayout from "./layouts/AdminLayout";
 
 function App() {
   return (
@@ -23,15 +25,14 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/change-password" element={<></>} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/security-settings" element={<SecuritySettingsPage />} />
-
+      
           {/* Customer */}
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["customer", "student"]}>
                 <DashboardPage />
               </ProtectedRoute>
             }
@@ -41,7 +42,7 @@ function App() {
           <Route
             path="/instructor/dashboard"
             element={
-              <ProtectedRoute roles={["instructor"]}>
+              <ProtectedRoute roles={["provider", "instructor"]}>
                 <InstructorDashboardPage />
               </ProtectedRoute>
             }
@@ -53,6 +54,16 @@ function App() {
             element={
               <ProtectedRoute roles={["admin"]}>
                 <AdminDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <AdminLayout title="Users">
+                  <AdminUsersPage />
+                </AdminLayout>
               </ProtectedRoute>
             }
           />
